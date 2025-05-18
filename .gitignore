@@ -1,0 +1,17 @@
+# Build dir
+/build/
+
+# Build helper files
+compile_commands.json
+
+# Clang dirs
+.cache
+
+# IDE/Editor dirs
+.vs/
+.vim/
+
+# OS files
+[Tt]humbs.db
+.DS_Store
+
