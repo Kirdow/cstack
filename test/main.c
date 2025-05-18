@@ -1,5 +1,6 @@
 #include "test.h"
 #include "test_array_set.h"
+#include "test_vector_list.h"
 #include "type.h"
 
 #include <string.h>
@@ -53,6 +54,7 @@ int main()
     int result;
 
     CSTACK_TEST(_test_array_set);
+    CSTACK_TEST(_test_vector_list);
 
     return result;
 }
