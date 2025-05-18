@@ -3,6 +3,7 @@
 # Set default flags
 DO_CLEAN=false
 DO_BUILD=false
+DO_TEST=false
 DO_RUN=false
 
 # Check for flags
@@ -16,6 +17,10 @@ for arg in "$@"; do
             DO_BUILD=true
             shift
             ;;
+        --test)
+            DO_TEST=true
+            shift
+            ;;
         --run)
             DO_RUN=true
             shift
@@ -23,6 +28,7 @@ for arg in "$@"; do
         --all)
             DO_CLEAN=true
             DO_BUILD=true
+            DO_TEST=true
             DO_RUN=true
             shift
             ;;
@@ -57,6 +63,12 @@ if [ "$DO_BUILD" = true ]; then
     make
 
     cd ..
+fi
+
+## Testing step
+if [ "$DO_TEST" = true ]; then
+    echo "] Testing CStack"
+    ./build/test_run $@
 fi
 
 ## Running step
