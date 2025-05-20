@@ -6,6 +6,46 @@ This is mostly a planning document and is subject to change.
 
 I will try shaping this document sort of like a dev-log with "talk as you go" style changelog, with newest updates at the top and oldest at the bottom.
 
+## 2025-05-20 20:22
+Now it's time for `2dup` and `2swap`. `2dup` could be made as a macro `over over`. However having it natively seems crucial. Same goes for `2swap` when we got a return stack, which we don't yet, so we're adding that as well.
+
+`2dup` therefore would be the following in x86_64:
+```x86asm
+mov rax, [rsp+8]
+mov rbx, [rsp]
+push rax
+push rbx
+```
+
+`2swap` on the other hand requires some more direct approach:
+```x86asm
+pop rax
+pop rbx
+pop rcx
+pop rdx
+push rbx
+push rax
+push rdx
+push rcx
+```
+
+Notice the order of `rax` and `rbx` stays the same, likewise `rcx` and `rdx` order stays. However, we swap the `rax`/`rbx` pair with the `rcx`/`rdx` pair.
+
+This means by the end of this session, we should be able to run the following code:
+```cstack
+34 35 5 7 2swap + 0 swap 2swap +
+2dup + 2swap +
+. . .
+```
+
+12 81 69
+which should then output
+```
+69
+81
+12
+```
+
 ## 2025-05-20 19:27
 Now that we got `dup` and `swap` we also need `over` which I forgot to mention earlier. It's the basis for `2dup` and `2swap`.
 

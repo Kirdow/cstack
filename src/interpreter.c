@@ -338,6 +338,47 @@ bool_t interpreter_step(inter_id id)
         runtimev("Peeked(1) %ld\n", n2);
         ipush(instance->program_stack, n2);
         runtimev("Pushed %ld\n", n2);
+    } else if (token_equals(token, "2dup", token_type_keyword)) {
+        ssize_t n1, n2;
+
+        if (instance->program_stack->vec.len < 2) {
+            return runtimev("Failed to run step. 2dup operator failed. Stack size is %lu. 2 is required\n", instance->program_stack->vec.len);
+        }
+
+        runtimev("Two-duping top stack values.\n");
+        n1 = ipeek_offset(instance->program_stack, 1);
+        runtimev("Peeked(1) %ld\n", n1);
+        n2 = ipeek_offset(instance->program_stack, 0);
+        runtimev("Peeked(0) %ld\n", n2);
+        ipush(instance->program_stack, n1);
+        runtimev("Pushed %ld\n", n1);
+        ipush(instance->program_stack, n2);
+        runtimev("Pushed %ld\n", n2);
+    } else if (token_equals(token, "2swap", token_type_keyword)) {
+        ssize_t n1, n2, n3, n4;
+
+        if (instance->program_stack->vec.len < 4) {
+            return runtimev("Failed to run step. 2swap operator failed. Stack size is %lu. 4 is required\n", instance->program_stack->vec.len);
+        }
+
+        runtimev("Two-swapping top stack values.\n");
+        n1 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n1);
+        n2 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n2);
+        n3 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n3);
+        n4 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n4);
+
+        ipush(instance->program_stack, n2);
+        runtimev("Pushed %ld\n", n2);
+        ipush(instance->program_stack, n1);
+        runtimev("Pushed %ld\n", n1);
+        ipush(instance->program_stack, n4);
+        runtimev("Pushed %ld\n", n4);
+        ipush(instance->program_stack, n3);
+        runtimev("Pushed %ld\n", n3);
     } else {
         if (cstack_flag(cstack_flag_verbose_runtime)) {
             char *token_log = token_format(token);
