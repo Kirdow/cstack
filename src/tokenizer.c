@@ -13,7 +13,7 @@ static void push_token(struct vector_t *tokens, const char *value, enum token_ty
     vector_add(tokens, (usize_t)token);
 }
 
-static struct token_t *get_token(struct vector_t *tokens, usize_t index)
+struct token_t *get_token(struct vector_t *tokens, usize_t index)
 {
     struct token_t *token;
     if (!vector_at(tokens, index, (usize_t *)&token)) {
@@ -191,7 +191,7 @@ static const char *token_type_name(enum token_type_t type)
     }
 }
 
-static char *token_format(struct token_t *token)
+char *token_format(struct token_t *token)
 {
     if (NULL == token) return NULL;
 

@@ -2,6 +2,7 @@
 #include "test_array_set.h"
 #include "test_vector_list.h"
 #include "test_vector_stack.h"
+#include "test_token.h"
 #include "type.h"
 
 #include <string.h>
@@ -57,6 +58,7 @@ int main()
     CSTACK_TEST(_test_array_set);
     CSTACK_TEST(_test_vector_list);
     CSTACK_TEST(_test_vector_stack);
+    CSTACK_TEST(_test_token);
 
     return result;
 }

@@ -2,6 +2,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 
 struct token_t token_create(const char *value, enum token_type_t type)
 {
@@ -43,19 +44,27 @@ bool_t token_equals(struct token_t *token, const char *value, enum token_type_t 
         return false;
     }
 
-    if (type != token->type) {
-        return false;
+    if (token_type_none == token->type) {
+        return NULL == value && token_type_none == type;
     }
 
-    if (NULL == value) {
-        return true;
+    if (token_type_none == type) {
+        if (NULL == value) {
+            return true;
+        }
+    } else if (NULL == value) {
+        return type == token->type;
+    } else {
+        if (type != token->type) {
+            return false;
+        }
+
+        if (NULL == token->value) {
+            return false;
+        }
     }
 
-    if (NULL == token->value) {
-        return false;
-    }
-
-    return strcmp(token->value, value);
+    return strcmp(token->value, value) == 0;
 }
 
 bool_t token_get_number_value(struct token_t *token, usize_t *result)
@@ -72,8 +81,15 @@ bool_t token_get_number_value(struct token_t *token, usize_t *result)
         return false;
     }
 
-    ssize_t i = strtoll(token->value, NULL, 10);
-    *result = (usize_t)i;
+    char *endptr;
+    errno = 0;
+    
+    ssize_t i = strtoll(token->value, &endptr, 10);
+    
+    if (*endptr == '\0' && errno != ERANGE) {
+        *result = (usize_t)i;
+        return true;
+    }
 
-    return true;
+    return false;
 }
