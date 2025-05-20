@@ -4,6 +4,7 @@
 #include "test_vector_stack.h"
 #include "test_token.h"
 #include "test_tokenizer.h"
+#include "test_hashmap.h"
 #include "type.h"
 
 #include <string.h>
@@ -61,6 +62,7 @@ int main()
     CSTACK_TEST(_test_vector_stack);
     CSTACK_TEST(_test_token);
     CSTACK_TEST(_test_tokenizer);
+    CSTACK_TEST(_test_hashmap);
 
     return result;
 }
