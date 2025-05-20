@@ -18,6 +18,104 @@ struct interpreter_instance {
     usize_t eop;
 };
 
+struct instruction_t {
+    struct token_t *token;
+    ssize_t next;
+};
+
+static struct instruction_t *create_instruction(struct token_t *token)
+{
+    struct instruction_t *inst = (struct instruction_t *)malloc(sizeof(struct instruction_t));
+    inst->token = token;
+    inst->next = -1;
+
+    return inst;
+}
+
+static void free_instruction(struct instruction_t *inst)
+{
+    if (NULL == inst) {
+        return;
+    }
+
+    if (NULL != inst->token) {
+        token_destroy(inst->token);
+        inst->token = NULL;
+    }
+
+    memset(inst, 0, sizeof(struct instruction_t));
+    free(inst);
+}
+
+static struct vector_t *create_instruction_vector(struct vector_t* tokens)
+{
+    if (NULL == tokens) {
+        return NULL;
+    }
+
+    struct vector_t *result = (struct vector_t *)malloc(sizeof(struct vector_t));
+    vector_alloc(result, tokens->len);
+
+    for (usize_t index = 0; index < tokens->len; index++) {
+        struct token_t *token = (struct token_t *)tokens->data[index];
+
+        struct instruction_t *inst = create_instruction(token);
+        vector_add(result, (usize_t)inst);
+    }
+
+    return result;
+}
+
+static void free_instruction_vector(struct vector_t *instructions)
+{
+    if (NULL == instructions) {
+        return;
+    }
+
+    for (usize_t index = 0; index < instructions->len; index++) {
+        struct instruction_t *inst = (struct instruction_t *)instructions->data[index];
+        free_instruction(inst);
+    }
+
+    vector_release(instructions);
+}
+
+static struct vector_t *create_processed_instructions(struct vector_t *tokens)
+{
+    if (NULL == tokens) {
+        return NULL;
+    }
+
+    struct stack_t ip_stack;
+    stack_alloc(&ip_stack);
+
+    struct vector_t *instructions = create_instruction_vector(tokens);
+
+    for (usize_t index = 0; index < instructions->len; index++) {
+        struct instruction_t *inst = (struct instruction_t *)instructions->data[index];
+        
+        if (token_equals(inst->token, "if", token_type_keyword)) {
+            stack_push(&ip_stack, index);
+        }
+
+        if (token_equals(inst->token, "end", token_type_keyword)) {
+            ssize_t ip = (ssize_t)stack_pop(&ip_stack, (usize_t)-1);
+
+            if (ip == -1) {
+                free_instruction_vector(instructions);
+                return NULL;
+            }
+
+            struct instruction_t *if_inst = (struct instruction_t *)instructions->data[ip];
+            if_inst->next = index + 1;
+        }
+    }
+
+    stack_release(&ip_stack);
+
+    return instructions;
+}
+
 #define INST(X) ((struct interpreter_instance *)(X))
 #define ID(X) ((inter_id)(X))
 
@@ -31,10 +129,17 @@ inter_id interpreter_init(struct vector_t *tokens)
 
     // Allocate memory for stack and code
     instance->program_stack = (struct stack_t *)malloc(sizeof(struct stack_t));
-    instance->program_code = (struct vector_t *)malloc(sizeof(struct vector_t));
 
-    // Take ownership of code
-    *instance->program_code = *tokens;
+    // Pre-process tokens and get instructions
+    instance->program_code = create_processed_instructions(tokens);
+    
+    // Validate creation of instructions
+    if (NULL == instance->program_code) {
+        free(instance->program_stack);
+        free(instance);
+        return 0;
+    }
+
     // Zero-Memory on the caller's copy
     memset(tokens, 0, sizeof(struct vector_t));
 
@@ -178,12 +283,20 @@ bool_t interpreter_step(inter_id id)
         return runtimev("Failed to run step. inter_id is 0\n");
     }
 
-    // Get current token
-    struct token_t *token = get_token(instance->program_code, instance->ip);
+    // Get current instruction
+    struct instruction_t* inst = (struct instruction_t *)vector_ptr_at(instance->program_code, instance->ip);
 
+    // If inst is NULL, return error
+    if (NULL == inst) {
+        return runtimev("Failed to run step. Instruction at index %lu is Null\n", instance->ip);
+    }
+
+    // Get token from instruction
+    struct token_t *token = inst->token;
+    
     // If token is NULL, return error
     if (NULL == token) {
-        return runtimev("Failed to run step. token at index %lu is Null\n", instance->ip);
+        return runtimev("Failed to run step. Token at index %lu is Null\n", instance->ip);
     }
 
     runtimev("Current stack size %lu\n", instance->program_stack->vec.len);
@@ -392,6 +505,26 @@ bool_t interpreter_step(inter_id id)
         runtimev("Pushed %ld\n", n4);
         ipush(instance->program_stack, n3);
         runtimev("Pushed %ld\n", n3);
+    } else if (token_equals(token, "if", token_type_keyword)) {
+        ssize_t n1;
+
+        if (instance->program_stack->vec.len < 1) {
+            return runtimev("Failed to run step. if operator failed. Stack is empty\n");
+        }
+
+        runtimev("Validating if-condition.\n");
+        n1 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n1);
+
+        if (!n1) {
+            instance->ip = inst->next;
+            return true;
+        }
+    } else if (token_equals(token, "end", token_type_keyword)) {
+        if (inst->next != -1) {
+            instance->ip = inst->next;
+            return true;
+        }
     } else {
         if (cstack_flag(cstack_flag_verbose_runtime)) {
             char *token_log = token_format(token);

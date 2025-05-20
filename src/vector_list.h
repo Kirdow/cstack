@@ -24,5 +24,6 @@ bool_t vector_erase_all(struct vector_t *vec, usize_t item);
 bool_t vector_find(struct vector_t *vec, usize_t item, usize_t *index);
 bool_t vector_clear(struct vector_t *vec);
 bool_t vector_at(struct vector_t *vec, usize_t index, usize_t *item);
+void * vector_ptr_at(struct vector_t *vec, usize_t index);
  
 #endif //_CSTACK_VECTOR_LIST_H

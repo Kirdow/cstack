@@ -15,12 +15,7 @@ static void push_token(struct vector_t *tokens, const char *value, enum token_ty
 
 struct token_t *get_token(struct vector_t *tokens, usize_t index)
 {
-    struct token_t *token;
-    if (!vector_at(tokens, index, (usize_t *)&token)) {
-        return NULL;
-    }
-
-    return token;
+    return (struct token_t *)vector_ptr_at(tokens, index);
 }
 
 static bool_t free_token(struct vector_t *tokens, usize_t index)

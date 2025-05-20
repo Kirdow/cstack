@@ -6,6 +6,59 @@ This is mostly a planning document and is subject to change.
 
 I will try shaping this document sort of like a dev-log with "talk as you go" style changelog, with newest updates at the top and oldest at the bottom.
 
+## 2025-05-20 21:03
+Time for something new. If statements. This introduces a new problem. Control flow. Currently, all we do after an instruction is to jump to the next instruction pointer by incrementing `program->ip` by one.
+
+We need to introduce a new component to the program. `instruction_t`. This one should have the following structure:
+```c
+struct instruction_t {
+    struct token_t *token;
+    ssize_t next;
+}
+```
+
+`token` would be the token we currently store in the `program->program_code` vector, now shifted into the `instruction_t` struct.<br>
+`next` would be an indicator to the control flow what to do at the end of a an instruction depending on its outcome. If `next` is -1, we default to incrementing `program->ip` by one. However, if it is not -1, it gets more contextual.
+
+For starters, with `if`, the way it works is that it pops the top most value. If it's non-zero (truthy), just increment IP by one as normal and enter the body. However, if the value is zero (falsy), we want to jump to the `end` keyword.
+
+Now how do we know the location of `end` before we discover it? simply: we don't. This is why to generate the `instruction_t` vector from `token_t` vector we need a pre-processor. The pre-processor would be `O(n)` where `n` is the amount of tokens in the program.<br>
+When it first discovers `if`, push the presence of this keyword by pushing it's pointer to a secondary stack. When we discover `end`, we then pop from this secondary stack, and modify the `if` value at that pointer to have its `next` variable set to the newly discovered `end` pointer.<br>
+However, this creates a problem. When we implement While loops, stumbling upon `end` from within the loop should obviously jump back to the condition. This is why bindings towards an `end` statement, shouldn't jump to the pointer for `end` but to whatever is located after `end`.<br>
+This is obviously context dependent. For `if` in particular, `end` should also just default to incrementing by 1, as it wouldn't make sense to run an if-statement twice. This should resolve any question about nested if-statements where you may encounter `end` being written twice in a row. Should `end` look ahead for duplicate `end`s? No. It should not.
+
+So by the end of this task, we should have this code:
+```cstack
+0 if
+    420 .
+    1 if
+        421 .
+    end
+
+    0 if
+        419 .
+    end
+end
+
+1 if
+    69 .
+
+    1 if
+        70 .
+    end
+
+    0 if
+        68 .
+    end
+end
+```
+
+This should output
+```
+69
+70
+```
+
 ## 2025-05-20 20:42
 Lastly, we've forgotten the `drop` operator. This one purely discards the top most stack value. It's identical to the following:
 ```x86asm

@@ -149,6 +149,16 @@ bool_t vector_at(struct vector_t *vec, usize_t index, usize_t *item)
     return true;
 }
 
+void * vector_ptr_at(struct vector_t *vec, usize_t index)
+{
+    void *item;
+    if (!vector_at(vec, index, (usize_t *)&item)) {
+        return NULL;
+    }
+
+    return item;
+}
+
 bool_t vector_clear(struct vector_t *vec)
 {
     if (NULL == vec || NULL == vec->data) {
