@@ -96,9 +96,7 @@ static struct vector_t *create_processed_instructions(struct vector_t *tokens)
         
         if (token_equals(inst->token, "if", token_type_keyword)) {
             stack_push(&ip_stack, index);
-        }
-
-        if (token_equals(inst->token, "end", token_type_keyword)) {
+        } else if (token_equals(inst->token, "else", token_type_keyword)) {
             ssize_t ip = (ssize_t)stack_pop(&ip_stack, (usize_t)-1);
 
             if (ip == -1) {
@@ -106,9 +104,36 @@ static struct vector_t *create_processed_instructions(struct vector_t *tokens)
                 return NULL;
             }
 
-            struct instruction_t *if_inst = (struct instruction_t *)instructions->data[ip];
-            if_inst->next = index + 1;
+            struct instruction_t *other = (struct instruction_t *)instructions->data[ip];
+            if (!token_equals(other->token, "if", token_type_keyword)) {
+                free_instruction_vector(instructions);
+                return NULL;
+            }
+
+            other->next = index + 1;
+
+            stack_push(&ip_stack, index);
+        } else if (token_equals(inst->token, "end", token_type_keyword)) {
+            ssize_t ip = (ssize_t)stack_pop(&ip_stack, (usize_t)-1);
+
+            if (ip == -1) {
+                free_instruction_vector(instructions);
+                return NULL;
+            }
+
+            struct instruction_t *other = (struct instruction_t *)instructions->data[ip];
+            if (!token_equals(other->token, "if", token_type_keyword) && !token_equals(other->token, "else", token_type_keyword)) {
+                free_instruction_vector(instructions);
+                return NULL;
+            }
+
+            other->next = index + 1;
         }
+    }
+
+    if (ip_stack.vec.len > 0) {
+        free_instruction_vector(instructions);
+        return NULL;
     }
 
     stack_release(&ip_stack);
@@ -517,6 +542,11 @@ bool_t interpreter_step(inter_id id)
         runtimev("Popped %ld\n", n1);
 
         if (!n1) {
+            instance->ip = inst->next;
+            return true;
+        }
+    } else if (token_equals(token, "else", token_type_keyword)) {
+        if (inst->next != -1) {
             instance->ip = inst->next;
             return true;
         }

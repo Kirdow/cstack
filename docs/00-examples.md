@@ -6,6 +6,68 @@ This is mostly a planning document and is subject to change.
 
 I will try shaping this document sort of like a dev-log with "talk as you go" style changelog, with newest updates at the top and oldest at the bottom.
 
+## 2025-05-20 21:52
+If statement (or If conditions) are now working. The example we used though, `06-if.cst`, has a few rough edges. Namely this:
+```cstack
+1 if
+    70 .
+end
+
+0 if
+    68 .
+end
+```
+
+Wouldn't it be easier if we just had it be this:
+```cstack
+1 if
+    70 .
+else
+    68 .
+end
+```
+
+Now to think about this. What happens when we encounter `if`? Well if the condition is `true`, we enter the if statement. If it's `false`, we jump to `end`, except in cases like these where we got `else`, we should jump there instead.
+
+Likewise, if we encounter `else`, we know that we just ran the `if` body, meaning `else` shouldn't run, and instead we jump to `end` from here.
+
+This means, for our current implementation, `end` should stay the same, except it should work the same for `else` as it does for `if` currently. Additionally, when we encounter `end`, we should do to `if` what `end` already does, by giving `if` a `next` value of the `pointer` after `else`. Additionally, we should also push back the current IP because `end` would need to know where `else` is located in order to provide the skip to `end` that `else` needs.
+
+Given this, at the end of the current task, we should have this code:
+```cstack
+1 if
+    70 .
+    1 if
+        1 .
+    end
+else
+    68 .
+    1 if
+        2 .
+    end
+end
+
+0 if
+    421 .
+    1 if
+        3 .
+    end
+else
+    419 .
+    1 if
+        4 .
+    end
+end
+```
+
+This should output:
+```
+70
+1
+419
+4
+```
+
 ## 2025-05-20 21:03
 Time for something new. If statements. This introduces a new problem. Control flow. Currently, all we do after an instruction is to jump to the next instruction pointer by incrementing `program->ip` by one.
 
