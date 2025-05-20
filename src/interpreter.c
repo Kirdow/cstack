@@ -56,7 +56,11 @@ bool_t interpreter_release(inter_id id)
         return false;
     }
 
+    bool_t success = true;
+
     struct interpreter_instance *instance = INST(id);
+
+    success &= instance->program_stack->vec.len == 0;
 
     // Release the stack
     stack_release(instance->program_stack);
@@ -78,7 +82,7 @@ bool_t interpreter_release(inter_id id)
     // Free the instance object
     free(instance);
 
-    return true;
+    return success;
 }
 
 bool_t interpreter_run(inter_id id)
@@ -310,6 +314,15 @@ bool_t interpreter_step(inter_id id)
         runtimev("Pushed %ld\n", n1);
         ipush(instance->program_stack, n1);
         runtimev("Pushed %ld\n", n1);
+    } else if (token_equals(token, "drop", token_type_keyword)) {
+        ssize_t n1;
+        if (instance->program_stack->vec.len < 1) {
+            return runtimev("Failed to run step. drop operator failed. Stack size is empty\n");
+        }
+
+        runtimev("Dropping top stack value.\n");
+        n1 = ipop(instance->program_stack);
+        runtimev("Dropped %ld\n", n1);
     } else if (token_equals(token, "swap", token_type_keyword)) {
         ssize_t n1, n2;
 

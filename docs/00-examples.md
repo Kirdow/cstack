@@ -6,6 +6,27 @@ This is mostly a planning document and is subject to change.
 
 I will try shaping this document sort of like a dev-log with "talk as you go" style changelog, with newest updates at the top and oldest at the bottom.
 
+## 2025-05-20 20:42
+Lastly, we've forgotten the `drop` operator. This one purely discards the top most stack value. It's identical to the following:
+```x86asm
+add rsp, 8
+```
+
+This means after implementing `drop`, we should be able to try a simple program
+```cstack
+0 35 34 2dup +
+2swap swap drop
+swap . + .
+```
+
+This should print out the following:
+```
+69
+69
+```
+
+And the stack should also be empty as indicated by a clean exit.
+
 ## 2025-05-20 20:22
 Now it's time for `2dup` and `2swap`. `2dup` could be made as a macro `over over`. However having it natively seems crucial. Same goes for `2swap` when we got a return stack, which we don't yet, so we're adding that as well.
 
