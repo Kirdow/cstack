@@ -286,6 +286,36 @@ bool_t interpreter_step(inter_id id)
 
         ipush(instance->program_stack, result);
         runtimev("Pushed %ld\n", result);
+    } else if (token_equals(token, "dup", token_type_keyword)) {
+        ssize_t n1;
+
+        if (instance->program_stack->vec.len < 1) {
+            return runtimev("Failed to run step. dup operator failed. Stack is empty\n");
+        }
+
+        runtimev("Duplicate top stack value.\n");
+        n1 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n1);
+        ipush(instance->program_stack, n1);
+        runtimev("Pushed %ld\n", n1);
+        ipush(instance->program_stack, n1);
+        runtimev("Pushed %ld\n", n1);
+    } else if (token_equals(token, "swap", token_type_keyword)) {
+        ssize_t n1, n2;
+
+        if (instance->program_stack->vec.len < 2) {
+            return runtimev("Failed to run step. swap operator failed. Stack size is %lu. 2 is required\n", instance->program_stack->vec.len);
+        }
+
+        runtimev("Swapping top two stack values.\n");
+        n1 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n1);
+        n2 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n2);
+        ipush(instance->program_stack, n1);
+        runtimev("Pushed %ld\n", n1);
+        ipush(instance->program_stack, n2);
+        runtimev("Pushed %ld\n", n2);
     } else {
         if (cstack_flag(cstack_flag_verbose_runtime)) {
             char *token_log = token_format(token);

@@ -6,6 +6,25 @@ This is mostly a planning document and is subject to change.
 
 I will try shaping this document sort of like a dev-log with "talk as you go" style changelog, with newest updates at the top and oldest at the bottom.
 
+## 2025-05-20 19:18
+Now the basic arithmetics operators have been implemented.
+
+Next up is basic keywords. Time to do `dup` and `swap`.
+
+`dup` should take the top value on the stack, and push it back twice.<br>
+`swap` should take the top two values on the stack, and push them back in reverse order.
+
+At the end of the session, this demo:
+```cstack
+7 76 dup .
+swap - .
+```
+Should have the following output:
+```
+76
+69
+```
+
 ## 2025-05-20 18:39
 Ops `+` and `.` has been implemented. Now it's time to finish all the arithmetics operators.
 
