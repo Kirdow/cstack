@@ -3,6 +3,7 @@
 #include "test_vector_list.h"
 #include "test_vector_stack.h"
 #include "test_token.h"
+#include "test_tokenizer.h"
 #include "type.h"
 
 #include <string.h>
@@ -59,6 +60,7 @@ int main()
     CSTACK_TEST(_test_vector_list);
     CSTACK_TEST(_test_vector_stack);
     CSTACK_TEST(_test_token);
+    CSTACK_TEST(_test_tokenizer);
 
     return result;
 }

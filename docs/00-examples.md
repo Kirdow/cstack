@@ -6,6 +6,19 @@ This is mostly a planning document and is subject to change.
 
 I will try shaping this document sort of like a dev-log with "talk as you go" style changelog, with newest updates at the top and oldest at the bottom.
 
+## 2025-05-20 18:39
+Ops `+` and `.` has been implemented. Now it's time to finish all the arithmetics operators.
+
+Next ups is `-`, then `*`, `/` and `%`. We need to determine what happens on division by zero. For now I'm gonna make it error gracefully by making `0 /` and `0 %` provide a result of `0`. In the future when we have `if` statements, the programmer would be able to check for zero divisions on their own to account for this. In a way this makes the language "unsafe", but I don't really want to deal with error handling atm with a language so fresh.
+
+By the end of this session, these should all print 690
+```cstack
+340 350 + .
+1050 360 - .
+23 30 * .
+6210 9 / .
+9690 1000 % .
+```
 ## 2025-05-20
 Currently plans of the language is starting.
 

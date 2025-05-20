@@ -109,7 +109,7 @@ static const char *next_word(const char *scan, char buffer[64])
     }
 }
 
-static bool_t is_number(char buffer[64])
+bool_t is_number(char buffer[64])
 {
     char *ptr = buffer;
 
@@ -126,10 +126,11 @@ static bool_t is_number(char buffer[64])
     return false;
 }
 
-static bool_t is_keyword(char buffer[64])
+bool_t is_keyword(char buffer[64])
 {
     char *ptr = buffer;
 
+    bool_t letter = false;
     while (ptr != buffer + 63) {
         char c = *ptr;
         if (c >= 'A' && c <= 'Z') {
@@ -137,9 +138,13 @@ static bool_t is_keyword(char buffer[64])
         }
 
         if (c == 0) {
-            return true;
+            return letter;
         } else if ((c < '0' || c > '9') && (c < 'a' && c > 'z')) {
             return false;
+        }
+
+        if (c >= 'a' && c <= 'z') {
+            letter = true;
         }
 
         ++ptr;
@@ -148,13 +153,20 @@ static bool_t is_keyword(char buffer[64])
     return false;
 }
 
-static enum token_type_t get_token_type(char buffer[64]) {
+bool is_symbol(char buffer[64])
+{
+    return !is_number(buffer) && !is_keyword(buffer);
+}
+
+enum token_type_t get_token_type(char buffer[64]) {
     if (is_number(buffer)) {
         return token_type_number;
     } else if (is_keyword(buffer)) {
         return token_type_keyword;
-    } else {
+    } else if (is_symbol(buffer)) {
         return token_type_symbol;
+    } else {
+        return token_type_none;
     }
 }
 

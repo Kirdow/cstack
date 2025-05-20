@@ -193,8 +193,7 @@ bool_t interpreter_step(inter_id id)
 
         ssize_t value = ipop(instance->program_stack);
         printf("%ld\n", value);
-        runtimev("New stack size %lu\n", instance->program_stack->vec.len);
-    } else if (token_equals(token, "+", token_type_none)) {
+    } else if (token_equals(token, "+", token_type_symbol)) {
         ssize_t n1, n2;
 
         if (instance->program_stack->vec.len < 2) {
@@ -204,16 +203,101 @@ bool_t interpreter_step(inter_id id)
         runtimev("Adding two numbers.\n");
         n1 = ipop(instance->program_stack);
         runtimev("Popped %ld\n", n1);
-        runtimev("New stack size %lu\n", instance->program_stack->vec.len);
         n2 = ipop(instance->program_stack);
         runtimev("Popped %ld\n", n2);
-        runtimev("New stack size %lu\n", instance->program_stack->vec.len);
 
         ssize_t result = n1 + n2;
 
         ipush(instance->program_stack, result);
         runtimev("Pushed %ld\n", result);
-        runtimev("New stack size %lu\n", instance->program_stack->vec.len);
+    } else if (token_equals(token, "-", token_type_symbol)) {
+        ssize_t n1, n2;
+
+        if (instance->program_stack->vec.len < 2) {
+            return runtimev("Failed to run step. - operator failed. Stack size is %lu. 2 is required\n", instance->program_stack->vec.len);
+        }
+
+        runtimev("Subtracting two numbers.\n");
+        n1 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n1);
+        n2 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n2);
+
+        ssize_t result = n2 - n1;
+
+        ipush(instance->program_stack, result);
+        runtimev("Pushed %ld\n", result);
+    } else if (token_equals(token, "*", token_type_symbol)) {
+        ssize_t n1, n2;
+
+        if (instance->program_stack->vec.len < 2) {
+            return runtimev("Failed to run step. * operator failed. Stack size is %lu. 2 is required\n", instance->program_stack->vec.len);
+        }
+
+        runtimev("Multiplying two numbers.\n");
+        n1 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n1);
+        n2 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n2);
+
+        ssize_t result = n2 * n1;
+
+        ipush(instance->program_stack, result);
+        runtimev("Pushed %ld\n", result);
+    } else if (token_equals(token, "/", token_type_symbol)) {
+        ssize_t n1, n2;
+
+        if (instance->program_stack->vec.len < 2) {
+            return runtimev("Failed to run step. / operator failed. Stack size is %lu. 2 is required\n", instance->program_stack->vec.len);
+        }
+
+        runtimev("Dividing two numbers.\n");
+        n1 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n1);
+        n2 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n2);
+
+        if (n1 == 0) {
+            runtimev("Warning: dividend is zero\n");
+        }
+
+        ssize_t result = (n1 == 0) ? 0 : (n2 / n1);
+
+        ipush(instance->program_stack, result);
+        runtimev("Pushed %ld\n", result);
+    } else if (token_equals(token, "%", token_type_symbol)) {
+        ssize_t n1, n2;
+
+        if (instance->program_stack->vec.len < 2) {
+            return runtimev("Failed to run step. % operator failed. Stack size is %lu. 2 is required\n", instance->program_stack->vec.len);
+        }
+
+        runtimev("Modulo two numbers.\n");
+        n1 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n1);
+        n2 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n2);
+
+        if (n1 == 0) {
+            runtimev("Warning: dividend is zero\n");
+        }
+
+        ssize_t result = (n1 == 0) ? 0 : (n2 % n1);
+
+        ipush(instance->program_stack, result);
+        runtimev("Pushed %ld\n", result);
+    } else {
+        if (cstack_flag(cstack_flag_verbose_runtime)) {
+            char *token_log = token_format(token);
+            if (token_log) {
+                runtimev("Invalid token [%s] at IP %lu\n", token_log, instance->ip);
+                free(token_log);
+            } else {
+                runtimev("Invalid token at IP %lu\n", instance->ip);
+            }
+        }
+
+        return false;
     }
 
     // For a normal step, increment the IP
