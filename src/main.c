@@ -1,32 +1,38 @@
 #include <stdio.h>
 
-#include "vector_stack.h"
+#include "source.h"
+#include "tokenizer.h"
+#include "string.h"
 
 int main(int argc, char** argv)
 {
-    printf("\nStack demo\n\n");
+    if (argc < 2) {
+        printf("Usage: %s <file>\n", argv[0]);
+        return 1;
+    }
 
-    usize_t value;
-    struct stack_t stack;
-    stack_alloc(&stack);
+    char *src;
+    if (!source_read_file(argv[1], &src)) {
+        printf("Failed to load file '%s'\n", argv[1]);
+        return 1;
+    }
 
-    printf("First push : 5\n");
-    stack_push(&stack, 5);
+    struct vector_t tokens;
 
-    printf("Second push : 7\n");
-    stack_push(&stack, 7);
+    usize_t cap = strlen(src) / 5;
+    if (cap < 8) cap = 8;
 
-    printf("Third push : 19\n\n");
-    stack_push(&stack, 19);
-    
-    printf("Stack size : %lu\n\n", stack_size(&stack));
+    vector_alloc(&tokens, cap);
 
-    printf("First pop : %ld\n", (ssize_t)stack_pop(&stack, -1));
-    printf("Second pop : %ld\n", (ssize_t)stack_pop(&stack, -1));
-    printf("Third pop : %ld\n", (ssize_t)stack_pop(&stack, -1));
-    printf("Fourth pop : %ld\n\n", (ssize_t)stack_pop(&stack, -1));
+    tokenize_code(&tokens, src);
 
-    stack_release(&stack);
+    tokenize_log(&tokens);
+
+    tokenize_free(&tokens);
+
+    vector_release(&tokens);
+
+    source_free_file(&src);
 
     return 0;
 }
