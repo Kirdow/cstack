@@ -145,6 +145,16 @@ static ssize_t ipop(struct stack_t *stack)
     return result;
 }
 
+static ssize_t ipeek_offset(struct stack_t *stack, usize_t offset)
+{
+    return (ssize_t)stack->vec.data[stack->vec.len - 1 - offset];
+}
+
+static ssize_t ipeek(struct stack_t *stack)
+{
+    return ipeek_offset(stack, 0);
+}
+
 static void ipush(struct stack_t *stack, ssize_t item)
 {
     stack_push(stack, (usize_t)item);
@@ -314,6 +324,18 @@ bool_t interpreter_step(inter_id id)
         runtimev("Popped %ld\n", n2);
         ipush(instance->program_stack, n1);
         runtimev("Pushed %ld\n", n1);
+        ipush(instance->program_stack, n2);
+        runtimev("Pushed %ld\n", n2);
+    } else if (token_equals(token, "over", token_type_keyword)) {
+        ssize_t n2;
+
+        if (instance->program_stack->vec.len < 2) {
+            return runtimev("Failed to run step. over operator failed. Stack size is %lu. 2 is required\n", instance->program_stack->vec.len);
+        }
+
+        runtimev("Pushing 2nd top-most value onto stack.\n");
+        n2 = ipeek_offset(instance->program_stack, 1);
+        runtimev("Peeked(1) %ld\n", n2);
         ipush(instance->program_stack, n2);
         runtimev("Pushed %ld\n", n2);
     } else {

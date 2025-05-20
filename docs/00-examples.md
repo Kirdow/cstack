@@ -6,6 +6,36 @@ This is mostly a planning document and is subject to change.
 
 I will try shaping this document sort of like a dev-log with "talk as you go" style changelog, with newest updates at the top and oldest at the bottom.
 
+## 2025-05-20 19:27
+Now that we got `dup` and `swap` we also need `over` which I forgot to mention earlier. It's the basis for `2dup` and `2swap`.
+
+`over` should simply copy the 2nd top most value, and push it onto stack.
+
+in x86_64 assembly this could look something like this:
+```x86asm
+pop rax
+pop rbx
+push rbx
+push rax
+push rbx
+```
+
+or you could do it like this:
+```x86asm
+mov rax, [rsp+8]
+push rax
+```
+
+So after `over` is implemented, we should be able to test this code:
+```cstack
+34 35 over . + .
+```
+This should yield the output
+```cstack
+34
+69
+```
+
 ## 2025-05-20 19:18
 Now the basic arithmetics operators have been implemented.
 
