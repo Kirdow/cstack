@@ -18,128 +18,7 @@ struct interpreter_instance {
     usize_t eop;
 };
 
-struct instruction_t {
-    struct token_t *token;
-    ssize_t next;
-};
-
-static struct instruction_t *create_instruction(struct token_t *token)
-{
-    struct instruction_t *inst = (struct instruction_t *)malloc(sizeof(struct instruction_t));
-    inst->token = token;
-    inst->next = -1;
-
-    return inst;
-}
-
-static void free_instruction(struct instruction_t *inst)
-{
-    if (NULL == inst) {
-        return;
-    }
-
-    if (NULL != inst->token) {
-        token_destroy(inst->token);
-        inst->token = NULL;
-    }
-
-    memset(inst, 0, sizeof(struct instruction_t));
-    free(inst);
-}
-
-static struct vector_t *create_instruction_vector(struct vector_t* tokens)
-{
-    if (NULL == tokens) {
-        return NULL;
-    }
-
-    struct vector_t *result = (struct vector_t *)malloc(sizeof(struct vector_t));
-    vector_alloc(result, tokens->len);
-
-    for (usize_t index = 0; index < tokens->len; index++) {
-        struct token_t *token = (struct token_t *)tokens->data[index];
-
-        struct instruction_t *inst = create_instruction(token);
-        vector_add(result, (usize_t)inst);
-    }
-
-    return result;
-}
-
-static void free_instruction_vector(struct vector_t *instructions)
-{
-    if (NULL == instructions) {
-        return;
-    }
-
-    for (usize_t index = 0; index < instructions->len; index++) {
-        struct instruction_t *inst = (struct instruction_t *)instructions->data[index];
-        free_instruction(inst);
-    }
-
-    vector_release(instructions);
-}
-
-static struct vector_t *create_processed_instructions(struct vector_t *tokens)
-{
-    if (NULL == tokens) {
-        return NULL;
-    }
-
-    struct stack_t ip_stack;
-    stack_alloc(&ip_stack);
-
-    struct vector_t *instructions = create_instruction_vector(tokens);
-
-    for (usize_t index = 0; index < instructions->len; index++) {
-        struct instruction_t *inst = (struct instruction_t *)instructions->data[index];
-        
-        if (token_equals(inst->token, "if", token_type_keyword)) {
-            stack_push(&ip_stack, index);
-        } else if (token_equals(inst->token, "else", token_type_keyword)) {
-            ssize_t ip = (ssize_t)stack_pop(&ip_stack, (usize_t)-1);
-
-            if (ip == -1) {
-                free_instruction_vector(instructions);
-                return NULL;
-            }
-
-            struct instruction_t *other = (struct instruction_t *)instructions->data[ip];
-            if (!token_equals(other->token, "if", token_type_keyword)) {
-                free_instruction_vector(instructions);
-                return NULL;
-            }
-
-            other->next = index + 1;
-
-            stack_push(&ip_stack, index);
-        } else if (token_equals(inst->token, "end", token_type_keyword)) {
-            ssize_t ip = (ssize_t)stack_pop(&ip_stack, (usize_t)-1);
-
-            if (ip == -1) {
-                free_instruction_vector(instructions);
-                return NULL;
-            }
-
-            struct instruction_t *other = (struct instruction_t *)instructions->data[ip];
-            if (!token_equals(other->token, "if", token_type_keyword) && !token_equals(other->token, "else", token_type_keyword)) {
-                free_instruction_vector(instructions);
-                return NULL;
-            }
-
-            other->next = index + 1;
-        }
-    }
-
-    if (ip_stack.vec.len > 0) {
-        free_instruction_vector(instructions);
-        return NULL;
-    }
-
-    stack_release(&ip_stack);
-
-    return instructions;
-}
+#include "instruction.h"
 
 #define INST(X) ((struct interpreter_instance *)(X))
 #define ID(X) ((inter_id)(X))
@@ -156,7 +35,7 @@ inter_id interpreter_init(struct vector_t *tokens)
     instance->program_stack = (struct stack_t *)malloc(sizeof(struct stack_t));
 
     // Pre-process tokens and get instructions
-    instance->program_code = create_processed_instructions(tokens);
+    instance->program_code = instruction_process_tokens(tokens);
     
     // Validate creation of instructions
     if (NULL == instance->program_code) {
@@ -200,7 +79,7 @@ bool_t interpreter_release(inter_id id)
 
 
     // Release the code
-    tokenize_free(instance->program_code);
+    instruction_free_vector(instance->program_code);
     // Don't forget to free the code
     free(instance->program_code);
     instance->program_code = NULL;

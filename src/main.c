@@ -46,6 +46,7 @@ int main(int argc, char** argv)
     usize_t cap = strlen(src) / 5;
     if (cap < 8) cap = 8;
 
+
     vector_alloc(&tokens, cap);
     tokenize_code(&tokens, src);
     source_free_file(&src);

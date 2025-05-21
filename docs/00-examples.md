@@ -6,6 +6,42 @@ This is mostly a planning document and is subject to change.
 
 I will try shaping this document sort of like a dev-log with "talk as you go" style changelog, with newest updates at the top and oldest at the bottom.
 
+## 2025-05-21 10:10
+`else` is working, and I also took the time to implement hashmaps. Hashmaps are currently strings only, but it's a basis for the next feature. Macros.
+
+Macros are snippets of code, which have a name and a body. This creates two phases for parsing. First we scan for macros and store them in a hashmap.<br>
+We subsequently strip the final code vector from these macros.<br>
+We then iterate recursively (with a boundary) over the code vector and replaces every occurrence of a macro name with its body.<br>
+We do this until we no longer find any more macro references, in which we start executing the program itself, or until we reach an expansion limit, in which we throw an error and exit.<br>
+
+At the end of implementing macros, we should be able to write this code:
+```cstack
+macro sum.
+    2dup + .
+end
+34 35 sum.
+. .
+```
+
+and have it first evaluate into this pair:
+```
+# hashmap:
+sum. => 2dup + .
+
+# code:
+34 35 sum. . .
+```
+and after expanding each macro name, the code should become:
+```cstack
+34 35 2dup + . . .
+```
+which should in turn output:
+```
+69
+35
+34
+```
+
 ## 2025-05-20 21:52
 If statement (or If conditions) are now working. The example we used though, `06-if.cst`, has a few rough edges. Namely this:
 ```cstack

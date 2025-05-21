@@ -1,0 +1,6 @@
+macro sum.
+    2dup + .
+end
+34 35 sum.
+. .
+
