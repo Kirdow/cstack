@@ -6,6 +6,41 @@ This is mostly a planning document and is subject to change.
 
 I will try shaping this document sort of like a dev-log with "talk as you go" style changelog, with newest updates at the top and oldest at the bottom.
 
+## 2025-05-21 17:36
+We now got compiling working, and it's working for all 9 examples.
+
+Testing compilation hasn't really seen its proper ways yet though as there's no loops. However, for loops to work properly we need conditions, and conditions won't work without all the logical and bitwise operators.
+
+After finishing the next task, all of these should output `1` on the end of each line:
+```cstack
+macro assert if 1 else 0 end + . end
+
+100     69 72 < assert
+200     72 69 > assert
+300     69 69 = assert
+400     69 72 != assert
+500     69 69 <= assert
+600     68 69 <= assert
+700     70 69 >= assert
+800     69 69 >= assert
+900     0 ! assert
+1000    69 69 = ! assert
+1100    511 255 & 255 = assert
+1200    250 5 | 255 = assert
+1300    0 ~ 255 & 255 = assert
+1400    1 1 && assert
+1500    1 0 && ! assert
+1600    0 1 && ! assert
+1700    0 0 && ! assert
+1800    1 1 || assert
+1900    1 0 || assert
+2000    0 1 || assert
+2100    0 0 || ! assert
+2200    250 255 ^ 5 = assert
+```
+
+This should work on both interpreter and compiled.
+
 ## 2025-05-21 11:30
 Now that macros seem to be working, time to make this actually compiled.
 

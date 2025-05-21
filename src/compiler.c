@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <unistd.h>
 
 struct compiler_instance {
     struct vector_t *program_code;
@@ -208,14 +209,30 @@ bool_t compiler_exec(comp_id id, const char *binary_path)
 
         struct token_t *t = inst->token;
 
-        printf("Generating instruction %s", t->value);
+        char buffer[256];
+        memset(buffer, 0, sizeof(buffer));
+        snprintf(buffer, 255, "Generating instruction %s", t->value);
+
+        size_t buf_len = strlen(buffer);
+
+        //printf("\r Generating instruction %s", t->value);
         fprintf(f, "_lbl_inst_%lu:\t; %s", index, t->value);
 
         if (inst->next != -1) {
-            printf(" (with next=%lu)", inst->next);
+            snprintf(buffer + buf_len, 255 - buf_len, " (with next=%lu)", inst->next);
+            buf_len = strlen(buffer);
             fprintf(f, " %lu", inst->next);
         }
-        printf("\n");
+
+        while (buf_len < strlen("Generating instruction XXXXX (with next=XXXXX)  ")) {
+            buffer[buf_len++] = ' ';
+        }
+
+        snprintf(buffer + buf_len, 255 - buf_len, "%d%%            ",
+                (int)((index + 1) * 100 / instance->program_code->len));
+
+        printf("\r %s\r", buffer);
+        fflush(stdout);
         fprintf(f, "\n");
 
         if (token_equals(t, NULL, token_type_number)) {
@@ -292,6 +309,96 @@ bool_t compiler_exec(comp_id id, const char *binary_path)
             if (inst->next != -1) {
                 fprintf(f, "\tjmp _lbl_inst_%lu\n", inst->next);
             }
+        } else if (sym(t, "=")) {
+            fprintf(f, "\tpop rbx\n");
+            fprintf(f, "\tpop rax\n");
+            fprintf(f, "\txor rdx, rdx\n");
+            fprintf(f, "\tcmp rax, rbx\n");
+            fprintf(f, "\tsetz dl\n");
+            fprintf(f, "\tpush rdx\n");
+        } else if (sym(t, "!=")) {
+            fprintf(f, "\tpop rbx\n");
+            fprintf(f, "\tpop rax\n");
+            fprintf(f, "\txor rdx, rdx\n");
+            fprintf(f, "\tcmp rax, rbx\n");
+            fprintf(f, "\tsetnz dl\n");
+            fprintf(f, "\tpush rdx\n");
+        } else if (sym(t, "<")) {
+            fprintf(f, "\tpop rbx\n");
+            fprintf(f, "\tpop rax\n");
+            fprintf(f, "\txor rdx, rdx\n");
+            fprintf(f, "\tcmp rax, rbx\n");
+            fprintf(f, "\tsetl dl\n");
+            fprintf(f, "\tpush rdx\n");
+        } else if (sym(t, "<=")) {
+            fprintf(f, "\tpop rbx\n");
+            fprintf(f, "\tpop rax\n");
+            fprintf(f, "\txor rdx, rdx\n");
+            fprintf(f, "\tcmp rax, rbx\n");
+            fprintf(f, "\tsetle dl\n");
+            fprintf(f, "\tpush rdx\n");
+        } else if (sym(t, ">")) {
+            fprintf(f, "\tpop rbx\n");
+            fprintf(f, "\tpop rax\n");
+            fprintf(f, "\txor rdx, rdx\n");
+            fprintf(f, "\tcmp rax, rbx\n");
+            fprintf(f, "\tsetg dl\n");
+            fprintf(f, "\tpush rdx\n");
+        } else if (sym(t, ">=")) {
+            fprintf(f, "\tpop rbx\n");
+            fprintf(f, "\tpop rax\n");
+            fprintf(f, "\txor rdx, rdx\n");
+            fprintf(f, "\tcmp rax, rbx\n");
+            fprintf(f, "\tsetge dl\n");
+            fprintf(f, "\tpush rdx\n");
+        } else if (sym(t, "!")) {
+            fprintf(f, "\tpop rax\n");
+            fprintf(f, "\txor rbx, rbx\n");
+            fprintf(f, "\ttest rax, rax\n");
+            fprintf(f, "\tsetz bl\n");
+            fprintf(f, "\tpush rbx\n");
+        } else if (sym(t, "~")) {
+            fprintf(f, "\tpop rax\n");
+            fprintf(f, "\tnot rax\n");
+            fprintf(f, "\tpush rax\n");
+        } else if (sym(t, "&")) {
+            fprintf(f, "\tpop rbx\n");
+            fprintf(f, "\tpop rax\n");
+            fprintf(f, "\tand rax, rbx\n");
+            fprintf(f, "\tpush rax\n");
+        } else if (sym(t, "|")) {
+            fprintf(f, "\tpop rbx\n");
+            fprintf(f, "\tpop rax\n");
+            fprintf(f, "\tor rax, rbx\n");
+            fprintf(f, "\tpush rax\n");
+        } else if (sym(t, "^")) {
+            fprintf(f, "\tpop rbx\n");
+            fprintf(f, "\tpop rax\n");
+            fprintf(f, "\txor rax, rbx\n");
+            fprintf(f, "\tpush rax\n");
+        } else if (sym(t, "&&")) {
+            fprintf(f, "\tpop rbx\n");
+            fprintf(f, "\tpop rax\n");
+            fprintf(f, "\txor rcx, rcx\n");
+            fprintf(f, "\ttest rax, rax\n");
+            fprintf(f, "\tjz .done\n");
+            fprintf(f, "\ttest rbx, rbx\n");
+            fprintf(f, "\tjz .done\n");
+            fprintf(f, "\tmov rcx, 1\n");
+            fprintf(f, ".done:\n");
+            fprintf(f, "\tpush rcx\n");
+        } else if (sym(t, "||")) {
+            fprintf(f, "\tpop rbx\n");
+            fprintf(f, "\tpop rax\n");
+            fprintf(f, "\txor rcx, rcx\n");
+            fprintf(f, "\ttest rax, rax\n");
+            fprintf(f, "\tjnz .set_one\n");
+            fprintf(f, "\ttest rbx, rbx\n");
+            fprintf(f, "\tjz .done\n");
+            fprintf(f, ".set_one:\n");
+            fprintf(f, "\tmov rcx, 1\n");
+            fprintf(f, ".done:\n");
+            fprintf(f, "\tpush rcx\n");
         } else {
             char *token_log = token_format(t);
             printf("Invalid token [%s] at IP %lu\n", token_log, index);
@@ -299,8 +406,9 @@ bool_t compiler_exec(comp_id id, const char *binary_path)
 
             goto _cleanup;
         }
-
     }
+
+    printf("\rGenerating instructions 100%%                            \r\n");
 
     printf("End of _start\n");
 

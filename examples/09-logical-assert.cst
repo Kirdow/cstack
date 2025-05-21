@@ -1,0 +1,24 @@
+macro assert if 1 else 0 end + . end
+
+100     69 72 < assert
+200     72 69 > assert
+300     69 69 = assert
+400     69 72 != assert
+500     69 69 <= assert
+600     68 69 <= assert
+700     70 69 >= assert
+800     69 69 >= assert
+900     0 ! assert
+1000    69 69 != ! assert
+1100    511 255 & 255 = assert
+1200    250 5 | 255 = assert
+1300    0 ~ 255 & 255 = assert
+1400    1 1 && assert
+1500    1 0 && ! assert
+1600    0 1 && ! assert
+1700    0 0 && ! assert
+1800    1 1 || assert
+1900    1 0 || assert
+2000    0 1 || assert
+2100    0 0 || ! assert
+2200    250 255 ^ 5 = assert

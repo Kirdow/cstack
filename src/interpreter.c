@@ -434,6 +434,223 @@ bool_t interpreter_step(inter_id id)
             instance->ip = inst->next;
             return true;
         }
+    } else if (token_equals(token, "=", token_type_symbol)) {
+        ssize_t n1, n2;
+
+        if (instance->program_stack->vec.len < 2) {
+            return runtimev("Failed to run step. = operator failed. Stack size is %lu. 2 is required\n", instance->program_stack->vec.len);
+        }
+
+        runtimev("Equality-check top stack values.\n");
+        n1 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n1);
+        n2 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n2);
+
+        ssize_t result = n1 == n2;
+        
+        ipush(instance->program_stack, result);
+        runtimev("Pushed %s\n", result ? "true" : "false");
+    } else if (token_equals(token, "!=", token_type_symbol)) {
+        ssize_t n1, n2;
+
+        if (instance->program_stack->vec.len < 2) {
+            return runtimev("Failed to run step. != operator failed. Stack size is %lu. 2 is required\n", instance->program_stack->vec.len);
+        }
+
+        runtimev("Inequality-check top stack values.\n");
+        n1 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n1);
+        n2 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n2);
+
+        ssize_t result = n1 != n2;
+        
+        ipush(instance->program_stack, result);
+        runtimev("Pushed %s\n", result ? "true" : "false");
+    } else if (token_equals(token, "<", token_type_symbol)) {
+        ssize_t n1, n2;
+
+        if (instance->program_stack->vec.len < 2) {
+            return runtimev("Failed to run step. < operator failed. Stack size is %lu. 2 is required\n", instance->program_stack->vec.len);
+        }
+
+        runtimev("Less-check top stack values.\n");
+        n1 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n1);
+        n2 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n2);
+
+        ssize_t result = n2 < n1;
+        
+        ipush(instance->program_stack, result);
+        runtimev("Pushed %s\n", result ? "true" : "false");
+    } else if (token_equals(token, ">", token_type_symbol)) {
+        ssize_t n1, n2;
+
+        if (instance->program_stack->vec.len < 2) {
+            return runtimev("Failed to run step. > operator failed. Stack size is %lu. 2 is required\n", instance->program_stack->vec.len);
+        }
+
+        runtimev("Greater-check top stack values.\n");
+        n1 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n1);
+        n2 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n2);
+
+        ssize_t result = n2 > n1;
+        
+        ipush(instance->program_stack, result);
+        runtimev("Pushed %s\n", result ? "true" : "false");
+    } else if (token_equals(token, "<=", token_type_symbol)) {
+        ssize_t n1, n2;
+
+        if (instance->program_stack->vec.len < 2) {
+            return runtimev("Failed to run step. <= operator failed. Stack size is %lu. 2 is required\n", instance->program_stack->vec.len);
+        }
+
+        runtimev("LessOrEqual-check top stack values.\n");
+        n1 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n1);
+        n2 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n2);
+
+        ssize_t result = n2 <= n1;
+        
+        ipush(instance->program_stack, result);
+        runtimev("Pushed %s\n", result ? "true" : "false");
+    } else if (token_equals(token, ">=", token_type_symbol)) {
+        ssize_t n1, n2;
+
+        if (instance->program_stack->vec.len < 2) {
+            return runtimev("Failed to run step. >= operator failed. Stack size is %lu. 2 is required\n", instance->program_stack->vec.len);
+        }
+
+        runtimev("GreaterOrEqual-check top stack values.\n");
+        n1 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n1);
+        n2 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n2);
+
+        ssize_t result = n2 >= n1;
+        
+        ipush(instance->program_stack, result);
+        runtimev("Pushed %s\n", result ? "true" : "false");
+    } else if (token_equals(token, "!", token_type_symbol)) {
+        ssize_t n1;
+
+        if (instance->program_stack->vec.len < 1) {
+            return runtimev("Failed to run step. ! operator failed. Stack size is empty. 1 is required\n", instance->program_stack->vec.len);
+        }
+
+        runtimev("LogicalNot top stack value.\n");
+        n1 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n1);
+
+        ssize_t result = !n1;
+        
+        ipush(instance->program_stack, result);
+        runtimev("Pushed %s\n", result ? "true" : "false");
+    } else if (token_equals(token, "~", token_type_symbol)) {
+        ssize_t n1;
+
+        if (instance->program_stack->vec.len < 1) {
+            return runtimev("Failed to run step. ~ operator failed. Stack size is empty. 1 is required\n", instance->program_stack->vec.len);
+        }
+
+        runtimev("BitwiseNot top stack value.\n");
+        n1 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n1);
+
+        ssize_t result = ~n1;
+        
+        ipush(instance->program_stack, result);
+        runtimev("Pushed %ld\n", result);
+    } else if (token_equals(token, "&", token_type_symbol)) {
+        ssize_t n1, n2;
+
+        if (instance->program_stack->vec.len < 2) {
+            return runtimev("Failed to run step. & operator failed. Stack size is %lu. 2 is required\n", instance->program_stack->vec.len);
+        }
+
+        runtimev("BitwiseAnd top stack value.\n");
+        n1 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n1);
+        n2 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n2);
+
+        ssize_t result = n2 & n1;
+        
+        ipush(instance->program_stack, result);
+        runtimev("Pushed %ld\n", result);
+    } else if (token_equals(token, "|", token_type_symbol)) {
+        ssize_t n1, n2;
+
+        if (instance->program_stack->vec.len < 2) {
+            return runtimev("Failed to run step. | operator failed. Stack size is %lu. 2 is required\n", instance->program_stack->vec.len);
+        }
+
+        runtimev("BitwiseOr top stack value.\n");
+        n1 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n1);
+        n2 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n2);
+
+        ssize_t result = n2 | n1;
+        
+        ipush(instance->program_stack, result);
+        runtimev("Pushed %ld\n", result);
+    } else if (token_equals(token, "&&", token_type_symbol)) {
+        ssize_t n1, n2;
+
+        if (instance->program_stack->vec.len < 2) {
+            return runtimev("Failed to run step. && operator failed. Stack size is %lu. 2 is required\n", instance->program_stack->vec.len);
+        }
+
+        runtimev("And-check top stack values.\n");
+        n1 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n1);
+        n2 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n2);
+
+        ssize_t result = n2 && n1;
+        
+        ipush(instance->program_stack, result);
+        runtimev("Pushed %s\n", result ? "true" : "false");
+    } else if (token_equals(token, "||", token_type_symbol)) {
+        ssize_t n1, n2;
+
+        if (instance->program_stack->vec.len < 2) {
+            return runtimev("Failed to run step. || operator failed. Stack size is %lu. 2 is required\n", instance->program_stack->vec.len);
+        }
+
+        runtimev("Or-check top stack values.\n");
+        n1 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n1);
+        n2 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n2);
+
+        ssize_t result = n2 || n1;
+        
+        ipush(instance->program_stack, result);
+        runtimev("Pushed %s\n", result ? "true" : "false");
+    } else if (token_equals(token, "^", token_type_symbol)) {
+        ssize_t n1, n2;
+
+        if (instance->program_stack->vec.len < 2) {
+            return runtimev("Failed to run step. ^ operator failed. Stack size is %lu. 2 is required\n", instance->program_stack->vec.len);
+        }
+
+        runtimev("BitwiseXor top stack values.\n");
+        n1 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n1);
+        n2 = ipop(instance->program_stack);
+        runtimev("Popped %ld\n", n2);
+
+        ssize_t result = n2 ^ n1;
+        
+        ipush(instance->program_stack, result);
+        runtimev("Pushed %ld\n", result);
     } else {
         if (cstack_flag(cstack_flag_verbose_runtime)) {
             char *token_log = token_format(token);
