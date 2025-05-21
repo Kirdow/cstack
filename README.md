@@ -29,8 +29,20 @@ You can also save yourself time by doing
 ./build.sh --clean --build
 ```
 
+## Testing
+First read Building section
+
+This project uses [Unity](https://github.com/ThrowTheSwitch/Unity) for Unit Testing.
+
+Then run this command
+```bash
+$ ./build.sh --build --test
+```
+
+You should see all tests passing.
+
 ## Running
-First read the previous section.
+First read Building section.
 
 Then run this command
 ```bash
