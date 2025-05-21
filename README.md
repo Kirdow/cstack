@@ -1,5 +1,8 @@
 # CStack
-In lack of a better name yet to be decided, **CStack** is a Stack-Based Programming Language made in C
+In lack of a better name yet to be decided, **CStack** is a Stack-Based Programming Language made in C.
+
+Until I update this readme, you can find examples in [./examples/](https://github.com/Kirdow/cstack/blob/master/examples/).<br>
+You can also find docs/dev-log explaining each above example, located in [./docs/00-examples.md](https://github.com/Kirdow/cstack/blob/master/docs/00-examples.md).
 
 ## Building
 You need these tools:
@@ -28,13 +31,15 @@ You can also save yourself time by doing
 First read the previous section.
 
 Then run this command
+```bash
+$ ./build/cstack <file>
 ```
-./build.sh --run
-```
+This will interpret the program you input
 
-If you want to both build and run, do `./build.sh --build --run`.
-If you want to do a clean build and run, you can do `./build.sh --clean --build --run`,
-but conveniently there's also `./build.sh --all` which does those three all in one.
+If you want to compile, instead run
+```bash
+$ ./build/cstack -o <executable_file> <file>
+```
 
 ## License
-TBD
+CStack is released and the source is available under [MIT License](https://github.com/Kirdow/cstack/blob/master/LICENSE).
