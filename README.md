@@ -1,6 +1,8 @@
 # CStack
 In lack of a better name yet to be decided, **CStack** is a Stack-Based Programming Language made in C.
 
+This project is made to practice C before I make my bigger project.
+
 Until I update this readme, you can find examples in [./examples/](https://github.com/Kirdow/cstack/blob/master/examples/).<br>
 You can also find docs/dev-log explaining each above example, located in [./docs/00-examples.md](https://github.com/Kirdow/cstack/blob/master/docs/00-examples.md).
 
