@@ -6,6 +6,13 @@ This is mostly a planning document and is subject to change.
 
 I will try shaping this document sort of like a dev-log with "talk as you go" style changelog, with newest updates at the top and oldest at the bottom.
 
+## 2025-05-21 11:30
+Now that macros seem to be working, time to make this actually compiled.
+
+We're going to use nasm for this, and require nasm to be installed globally on the system.
+
+By the end of this, all 9 examples so far should work as a compiled executable.
+
 ## 2025-05-21 10:10
 `else` is working, and I also took the time to implement hashmaps. Hashmaps are currently strings only, but it's a basis for the next feature. Macros.
 
